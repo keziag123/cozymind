@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CozyMind</title>
+    <style>
+        /* --- FONTS & LOCAL FONT STORAGE DECK --- */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+        @font-face {
+            font-family: 'ADELIA';
+            src: url('ADELIA.otf') format('opentype'),
+                 url('adelia.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --branding-pink: #F4729D;
+            --dark-text: #DC6C94;         
+            --pastel-pink: #FFB3C6;       
+            --light-pink: #FFE3EC;        
+            --ice-blue: #E3FAFF;          
+            --light-pastel-blue: #EDFAFF; 
+            --polka-pink: #FFA0B8;        
+            --border-blue: #BCEEFA;       
+            --white: #FFFFFF;
+            --meta-gray: #EAA7C0;
+
+            /* --- CALMING PASTEL CALENDAR TRACKING SCALE --- */
+            --pastel-happy: #FFF9D9;
+            --pastel-cozy: #FFFBE6;
+            --pastel-tired: #E6F3FF;
+            --pastel-awful: #D1E9F9;
+        }
+
+        html, body {
+            background-color: #FFF5F8;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- ENFORCED PORTRAIT PHONE VIEWPORT CONTAINER --- */
+        .viewport-wrapper {
+            width: min(100vw, calc(100vh * 1080 / 1920));
+            height: min(100vh, calc(100vw * 1920 / 1080));
+            aspect-ratio: 1080 / 1920;
+            background-color: var(--white);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Nunito', sans-serif;
+            color: var(--dark-text);
+            overscroll-behavior: none;
+            box-shadow: 0 15px 50px rgba(220, 108, 148, 0.15);
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        .app-screen, .bottom-nav-bar, .onboarding-controls {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .app-screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            flex-direction: column;
+            padding: 50px 32px 125px 32px; 
+            background-color: var(--white);
+            z-index: 1;
+        }
+
+        .app-screen.active {
+            display: flex;
+            z-index: 10;
+        }
+
+        .screen-transition-out {
+            animation: cozyScreenOut 0.32s ease forwards;
+        }
+
+        .screen-transition-in {
+            animation: cozyScreenIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes cozyScreenOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(12px) scale(0.985); }
+        }
+
+        @keyframes cozyScreenIn {
+            from { opacity: 0; transform: translateY(18px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .app-title-adelia {
+            font-family: 'ADELIA', 'Fredoka One', sans-serif;
+            color: var(--branding-pink); 
+            text-transform: none;
+            letter-spacing: -0.02em;     
+            text-align: center;
+        }
+
+        .cozy-btn {
+            background-color: var(--branding-pink);
+            color: var(--white);
+            font-family: 'Fredoka One', sans-serif;
+            border: none;
+            border-radius: 25px;
+            padding: 18px 24px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0px var(--dark-text);
+            transition: all 0.1s ease;
+            text-align: center;
+            width: 100%;
+            touch-action: manipulation;
+            display: block;
+        }
+
+        .cozy-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0px var(--dark-text);
+        }
+
+        /* ==========================================
+           ONBOARDING VIDEO WRAPPER
+           Seamless intro -> loop handoff
+           ========================================== */
+        .onboarding-video-wrapper {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .onboarding-video-wrapper video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* intro on top initially */
+        #introVideo {
+            z-index: 2;
+            opacity: 1;
+        }
+
+        /* loop video underneath, already ready */
+        #loopVideo {
+            z-index: 1;
+            opacity: 1;
+        }
+
+        .placeholder-illustration {
+            width: 100%;
+            aspect-ratio: 1.6;
+            background-color: var(--ice-blue);
+            border: 3px dashed var(--border-blue);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-text);
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.15rem;
+            text-align: center;
+            padding: 24px;
+            margin-bottom: 35px;
+        }
+
+        .onboarding-illustration-image {
+            width: 100%;
+            aspect-ratio: 1.6;
+            object-fit: contain;
+            display: block;
+            margin-bottom: 35px;
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        .feature-slide {
+            padding-top: 22px;
+        }
+
+        .feature-slide h2 {
+            margin-top: 22px;
+            margin-bottom: 0;
+        }
+
+        .feature-slide p {
+            margin-top: 16px !important;
+        }
+
+        /* ==========================================
+           PAGE 1: ONBOARDING SCREEN
+           ========================================== */
+        #screen-onboarding {
+            justify-content: space-between;
+            background-image: radial-gradient(var(--light-pink) 15%, transparent 16%);
+            background-size: 24px 24px;
+            touch-action: pan-y;
+            padding-bottom: 50px;
+            position: relative;
+        }
+
+        #screen-onboarding.bg-ready {
+            background-image: none !important;
+            background-color: transparent;
+        }
+
+        /* Full Fitted PNG Background Added Dynamically */
+        #bgImageContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.12s linear;
+        }
+
+        #bgImageContainer img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .onboarding-slider {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            z-index: 3;
+        }
+
+        .slide-content {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out forwards;
+            width: 100%;
+        }
+
+        .slide-content.active {
+            display: block;
+        }
+
+        .onboarding-slider h2 {
+            font-size: 2.3rem;
+            margin-bottom: 18px;
+            line-height: 1.25;
+        }
+
+        .onboarding-slider p {
+            color: var(--dark-text);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 0 20px; 
+            text-align: center;
+        }
+
+        .onboarding-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+            padding: 0 5px;
+            z-index: 2;
+        }
+
+        .dot-indicators {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--light-pink);
+            transition: background-color 0.3s ease, width 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: var(--branding-pink);
+            width: 24px;
+            border-radius: 5px;
+        }
+
+        .nav-arrow-btn {
+            background-color: var(--white);
+            border: 3px solid var(--border-blue);
+            color: var(--dark-text);
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 0 var(--border-blue);
+            touch-action: manipulation;
+        }
+
+        /* ===== NEW: LOWERED TEXT BLOCK FOR ONBOARDING SLIDE 1 ===== */
+        #slide-1 {
+            position: relative;
+            min-height: 100%;
+        }
+
+        .slide-1-text-block {
+            width: 100%;
+            margin-top: 510px; /* moved slightly lower again */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+        }
+
+        .slide-1-title {
+            margin-bottom: 0 !important;
+            line-height: 1.08;
+        }
+
+        .slide-1-subtitle {
+            font-size: 1.3rem;
+            color: var(--dark-text);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            display: block;
+            margin-top: 14px; /* slight extra space below CozyMind */
+        }
+
+        .slide-1-desc {
+            margin-top: 18px;
+            max-width: 92%;
+        }
+
+        /* ==========================================
+           PAGE 2: LOGIN SCREEN
+           ========================================== */
+        #screen-login {
+            justify-content: center;
+            gap: 35px;
+        }
+
+        .login-header {
+            text-align: center;
+        }
+
+        .login-header span {
+            font-size: 3rem !important;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .login-header h2 {
+            font-family: 'Fredoka One', sans-serif;
+            color: var(--branding-pink);
+            font-size: 2.2rem;
+            text-align: center;
+        }
+
+        .login-card {
+            background-color: var(--white);
+            border: 3px dashed var(--pastel-pink);
+            border-radius: 30px;
+            padding: 40px 24px;
+            box-shadow: 0 10px 25px rgba(244, 114, 157, 0.05);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+        }
+
+        .cozy-input {
+            width: 100%;
+            padding: 18px 22px;
+            border: 2.5px solid var(--light-pink);
+            border-radius: 18px;
+            font-size: 1.1rem;
+            color: var(--dark-text);
+            outline: none;
+            background-color: #FFF1F6;
+            -webkit-appearance: none;
+            user-select: text !important;
+            -webkit-user-select: text !important; 
+        }
+
+        .cozy-input::placeholder {
+            color: var(--meta-gray);
+            opacity: 0.8;
+        }
+
+        .social-login-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 4px 0 18px 0;
+        }
+
+        .social-login-btn {
+            width: 100%;
+            border: 2.5px solid var(--light-pink);
+            background: linear-gradient(180deg, #FFE3EC 0%, #FFFFFF 100%);
+            border-radius: 18px;
+            min-height: 58px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.2s ease;
+        }
+
+        .social-login-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .social-login-btn span {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            line-height: 1.2;
+        }
+
+        .social-login-btn:active {
+            transform: translateY(2px);
+        }
+
+        .login-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-top: 24px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .login-links a {
+            color: var(--dark-text);
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* ==========================================
+           PAGE 3: HOME SCREEN (MAIN APP SANCTUARY)
+           ========================================== */
+        #screen-home {
+            padding: 40px 0 0 0;
+            background: linear-gradient(180deg, var(--light-pastel-blue) 0%, var(--white) 100%);
+        }
+
+        .home-scroll-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 12px 32px 60px 32px; 
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .home-scroll-container::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .home-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            margin-top: -16px; /* refined upward nudge for CozyMind row */
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .home-top-bar .app-title-adelia {
+            text-align: left;
+            transform: translateY(-9px);
+        }
+
+        .profile-avatar-placeholder {
+            width: 52px;
+            height: 52px;
+            background-image: url('pfp.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2.5px solid var(--white);
+            border-radius: 50%;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .dashboard-header-block {
+            display: flex;
+            gap: 14px;
+            margin-top: -6px; /* lift header cards slightly to sit cleaner on the grid */
+            margin-bottom: 28px;
+            align-items: stretch;
+        }
+
+        .hero-welcome-card {
+            flex: 1.35; /* slightly wider pink textbox */
+            background-color: rgba(255, 227, 236, 0.85); 
+            border: 2.5px solid var(--branding-pink);
+            border-radius: 20px;
+            padding: 16px 18px;
+            min-height: 118px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-welcome-card h3 {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            line-height: 1.4;
+            color: var(--dark-text);
+            text-align: left;
+        }
+
+        .streak-counter-card {
+            flex: 0 0 162px; /* more square-ish streak card */
+            min-height: 118px;
+            background-color: #FFFDEB;
+            border: 2.5px dashed var(--branding-pink);
+            border-radius: 20px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 3px 3px 0 var(--white), 5px 5px 0 var(--light-pink);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .streak-number {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.8rem;
+            color: var(--branding-pink);
+            line-height: 1.1;
+        }
+
+        .streak-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--dark-text);
+            margin-top: 2px;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .section-label {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.1rem;
+            color: var(--branding-pink);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: 1px 1px 0px var(--white);
+            text-align: left;
+        }
+
+        .reroll-btn {
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            color: var(--dark-text);
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--border-blue);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding-bottom: 2px;
+        }
+
+        .reroll-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 var(--border-blue);
+        }
+
+        .wide-view-btn {
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            color: var(--dark-text);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--border-blue);
+            transition: all 0.1s ease;
+        }
+
+        .calendar-nav-controls {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .calendar-nav-controls.active {
+            display: flex;
+        }
+
+        .calendar-nav-btn {
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            color: var(--dark-text);
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--border-blue);
+            line-height: 1;
+        }
+
+        .calendar-nav-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 var(--border-blue);
+        }
+
+        /* --- STABLE HORIZONTAL 4-COLUMN PERFECT SQUARE EMOTION GRID --- */
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 18px; 
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        .mood-badge {
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            cursor: pointer;
+            box-shadow: 0 4px 0 var(--border-blue);
+            touch-action: manipulation;
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            overflow: visible;
+        }
+
+        .mood-badge img {
+            width: 68px;
+            height: 68px;
+            max-width: 85%;
+            max-height: 70%;
+            object-fit: contain;
+            flex-shrink: 0;
+            margin-bottom: 12px; 
+            transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .mood-badge span {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--dark-text);
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+            line-height: 1;
+        }
+
+        /* --- USER PASTEL SELECTION RULES --- */
+        .mood-badge.select-Happy {
+            background-color: var(--pastel-happy);
+            border-color: #F5E9A8;
+            box-shadow: 0 4px 0 #F5E9A8;
+        }
+        .mood-badge.select-Cozy {
+            background-color: var(--pastel-cozy);
+            border-color: #F2E8B5;
+            box-shadow: 0 4px 0 #F2E8B5;
+        }
+        .mood-badge.select-Tired {
+            background-color: var(--pastel-tired);
+            border-color: #C6E0F2;
+            box-shadow: 0 4px 0 #C6E0F2;
+        }
+        .mood-badge.select-Awful {
+            background-color: var(--pastel-awful);
+            border-color: #B5D4E8;
+            box-shadow: 0 4px 0 #B5D4E8;
+        }
+
+        .mood-badge.selected img {
+            transform: scale(1.15) translateY(-3px);
+        }
+
+        .mood-badge.animating {
+            animation: bouncePop 0.3s ease forwards;
+        }
+
+        @keyframes bouncePop {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- HORIZONTAL COMPACT CALENDAR COMPONENT --- */
+        .compact-calendar-container {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 2.5px solid var(--light-pink);
+            border-radius: 22px;
+            padding: 14px 14px 16px 14px;
+            margin-top: -4px; /* lift timeline slightly for cleaner grid spacing */
+            margin-bottom: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .calendar-strip-scroller {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            padding: 2px 2px 10px 10px; /* slight right nudge for day tiles */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        .calendar-strip-scroller::-webkit-scrollbar {
+            height: 0px;
+        }
+
+        .cal-day-node {
+            flex: 0 0 50px;
+            height: 78px;
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--border-blue);
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .cal-day-node .day-lbl {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--meta-gray);
+            text-transform: uppercase;
+        }
+
+        .cal-day-node .num-lbl {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.15rem;
+            margin-top: 1px;
+            color: var(--dark-text);
+        }
+
+        .cal-day-node .mood-dot-marker {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .cal-day-node .mood-dot-marker img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
+
+        .cal-day-node.active-today {
+            border-color: var(--branding-pink);
+            background-color: #FFF5F8;
+            box-shadow: 0 3px 0 var(--branding-pink);
+        }
+
+        .cal-day-node.active-today .day-lbl {
+            color: var(--branding-pink);
+        }
+
+        .cal-day-node.selected-date {
+            border-color: var(--polka-pink);
+            background-color: #FFFDF0;
+        }
+
+        .cal-day-node.selected-date.mood-happy {
+            background-color: var(--pastel-happy);
+            border-color: #F3D77B;
+        }
+
+        .cal-day-node.selected-date.mood-cozy {
+            background-color: var(--pastel-cozy);
+            border-color: #F2D6A2;
+        }
+
+        .cal-day-node.selected-date.mood-tired {
+            background-color: var(--pastel-tired);
+            border-color: #9CC8F3;
+        }
+
+        .cal-day-node.selected-date.mood-awful {
+            background-color: var(--pastel-awful);
+            border-color: #7FB3E6;
+        }
+
+        .cal-day-node.future-locked {
+            opacity: 0.45;
+            background-color: #FDF9FB;
+            border-color: #E2D5DA;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .cal-day-node.future-locked .num-lbl, 
+        .cal-day-node.future-locked .day-lbl {
+            color: #C1AFB6;
+        }
+
+        .calendar-strip-scroller.full-wide-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            overflow-x: hidden;
+            gap: 12px;
+            padding-bottom: 4px;
+        }
+
+        .calendar-strip-scroller.full-wide-grid .cal-day-node {
+            flex: none;
+            width: 100%;
+        }
+
+        /* --- REST OF THE UTILITY ELEMENTS --- */
+        .recommend-action-box {
+            background-color: var(--white);
+            border: 2.5px solid var(--pastel-pink);
+            border-radius: 20px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            gap: 12px;
+        }
+
+        .recommend-text-side {
+            text-align: left;
+        }
+
+        .recommend-card-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--white);
+            background-color: var(--branding-pink);
+            padding: 3px 10px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .recommend-text-side h4 {
+            font-size: 1rem;
+            line-height: 1.3;
+            color: var(--dark-text);
+        }
+
+        .action-circle-go {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--ice-blue);
+            border: 2.5px solid var(--border-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: 0 3px 0 var(--border-blue);
+        }
+
+        .journal-composer {
+            background-color: var(--white);
+            border: 2.5px solid var(--border-blue);
+            border-radius: 22px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .journal-input {
+            width: 100%;
+            height: 85px;
+            border: none;
+            resize: none;
+            outline: none;
+            font-size: 1.05rem;
+            color: var(--dark-text);
+            line-height: 28px;
+            padding: 2px 4px;
+            background: repeating-linear-gradient(transparent, transparent 26px, #BCEEFA 26px, #BCEEFA 28px);
+            -webkit-appearance: none;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        .keep-btn {
+            background-color: var(--white);
+            border: 2.5px solid var(--branding-pink);
+            color: var(--branding-pink);
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 0.9rem;
+            padding: 6px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--branding-pink);
+        }
+
+        .journal-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .feed-item {
+            background-color: rgba(255, 255, 255, 0.96);
+            border-left: 6px solid var(--branding-pink);
+            border-radius: 4px 16px 16px 4px;
+            padding: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.01);
+            text-align: left;
+        }
+
+        .feed-meta {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .feed-text {
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .feed-text img {
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        /* ==========================================
+           PAGE 4: MOOD ANALYTICS SCREEN
+           ========================================== */
+        #screen-analytics {
+            padding: 40px 0 0 0;
+            background: linear-gradient(180deg, #FFE3EC 0%, #FFFFFF 100%);
+        }
+
+        .analytics-scroll-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 32px 60px 32px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .analytics-scroll-container::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .vibe-hero-card {
+            background-color: var(--ice-blue);
+            border: 2.5px solid var(--border-blue);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 35px;
+            text-align: center;
+            box-shadow: 0 6px 0 var(--border-blue);
+        }
+
+        .vibe-hero-card span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .vibe-badge-title {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 2.1rem;
+            color: var(--branding-pink);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .vibe-badge-title img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+        }
+
+        .stat-bar-container {
+            background-color: var(--white);
+            border: 2.5px solid var(--light-pink);
+            border-radius: 22px;
+            padding: 22px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .stat-label-with-img {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-label-with-img img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background-color: #FFF5F8;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 8px;
+            border: 1px solid var(--light-pink);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--branding-pink);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            border-radius: 6px;
+        }
+
+        /* --- STICKY BOTTOM NAVIGATION BAR --- */
+        .bottom-nav-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 85px;
+            background-color: rgba(255, 255, 255, 0.98);
+            border-top: 3px dotted var(--light-pink);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 15px;
+            z-index: 900;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--polka-pink);
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--branding-pink);
+        }
+
+        /* tiny balance tweak on home screen nav */
+        .bottom-nav-bar .nav-item { transform: translate(4px, 10px); }
+
+        .nav-icon-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    
+.activity-align{margin-left:10px;display:inline-block;}
+.status-align{margin-left:18px;}
+
+.activity-pill-shift{}
+.day-shift{}
+</style>
+</head>
+<body>
+
+    <div class="viewport-wrapper">
+
+        <!-- ==========================================
+             ONBOARDING SCREEN
+             ========================================== -->
+        <div id="screen-onboarding" class="app-screen active">
+            <div class="onboarding-video-wrapper" id="videoWrapper">
+                <!-- Intro video -->
+                <video id="introVideo" autoplay muted playsinline preload="auto">
+                    <source src="in.MOV" type="video/quicktime">
+                    <source src="in.mp4" type="video/mp4">
+                </video>
+
+                <!-- Loop video underneath for seamless handoff -->
+                <video id="loopVideo" muted playsinline preload="auto" loop>
+                    <source src="loop.MOV" type="video/quicktime">
+                    <source src="loop.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div id="bgImageContainer">
+                <img src="bg1.PNG" alt="Sanctuary Background">
+            </div>
+
+            <div class="onboarding-slider" id="swipe-zone">
+                <!-- SLIDE 1 -->
+                <div class="slide-content active" id="slide-1">
+                    <div class="slide-1-text-block">
+                        <h2 class="app-title-adelia slide-1-title">
+                            CozyMind
+                            <span class="slide-1-subtitle">Your Safe Space</span>
+                        </h2>
+                        <p class="slide-1-desc" style="margin-top: 28px;">
+                            Welcome to your digital sanctuary. Swipe or click to review our custom features.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SLIDE 2 -->
+                <div class="slide-content feature-slide" id="slide-2">
+                    <img src="moodtracker.PNG" alt="Mood Tracker Illustration" class="onboarding-illustration-image">
+                    <h2 style="font-family:'Fredoka One', sans-serif; color:var(--branding-pink); text-align:center;">Track Your Rhythm</h2>
+                    <p style="margin-top: 18px;">Log your current inner climate with a single tap. Look back at your weekly mood patterns safely.</p>
+                </div>
+
+                <!-- SLIDE 3 -->
+                <div class="slide-content feature-slide" id="slide-3">
+                    <img src="releasethoughts.PNG" alt="Release Thoughts Illustration" class="onboarding-illustration-image">
+                    <h2 style="font-family:'Fredoka One', sans-serif; color:var(--branding-pink); text-align:center;">Release Thoughts</h2>
+                    <p style="margin-top: 18px;">Pour your feelings onto the lines whenever you need to release weight. Your entries are stored locally.</p>
+                </div>
+            </div>
+
+            <div class="onboarding-controls">
+                <div class="dot-indicators">
+                    <div class="dot active" id="dot-1"></div>
+                    <div class="dot" id="dot-2"></div>
+                    <div class="dot" id="dot-3"></div>
+                </div>
+                <button class="nav-arrow-btn" id="next-slide-btn" onclick="handleNextSlide()">➔</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             LOGIN SCREEN
+             ========================================== -->
+        <div id="screen-login" class="app-screen">
+            <div class="login-header">
+                <span> </span>
+                <h2>Welcome Back!</h2>
+            </div>
+            <div class="login-card">
+                <div class="input-group">
+                    <input type="email" class="cozy-input" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="cozy-input" placeholder="Password">
+                </div>
+
+                <div class="social-login-stack">
+                    <button class="social-login-btn" onclick="handleSocialLogin('Google')">
+                        <img src="Google.PNG" alt="Google" onerror="this.onerror=null; const tries=['google.PNG','Google.png','google.png']; let i=0; const tryNext=()=>{ if(i<tries.length){ this.onerror=tryNext; this.src=tries[i++]; } }; tryNext();">
+                        <span>Login with Google</span>
+                    </button>
+                    <button class="social-login-btn" onclick="handleSocialLogin('Apple')">
+                        <img src="Apple.PNG" alt="Apple" onerror="this.onerror=null; const tries=['apple.PNG','Apple.png','apple.png']; let i=0; const tryNext=()=>{ if(i<tries.length){ this.onerror=tryNext; this.src=tries[i++]; } }; tryNext();">
+                        <span>Login with Apple</span>
+                    </button>
+                </div>
+
+                <button class="cozy-btn" onclick="handleAppLogin()">Enter Sanctuary</button>
+                <div class="login-links">
+                    <a onclick="alert('Link sent!')">Forgot Password?</a>
+                    <a style="color:var(--dark-text)">New here? <span style="color: var(--branding-pink)" onclick="navigateTo('screen-onboarding')">Create Account</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             HOME SCREEN
+             ========================================== -->
+        <div id="screen-home" class="app-screen">
+            <div style="flex-shrink: 0; width: 100%;">
+                <div class="home-top-bar">
+                    <h2 class="app-title-adelia" style="font-size: 2rem;">CozyMind</h2>
+                    <div class="profile-avatar-placeholder"></div>
+                </div>
+            </div>
+
+            <div class="home-scroll-container">
+                <div class="dashboard-header-block">
+                    <div class="hero-welcome-card">
+                        <h3 id="welcome-greeting">Hi there! ✨<br>Let's check in for today.</h3>
+                    </div>
+                    <div class="streak-counter-card" id="streak-card">
+                        <div class="streak-number" id="live-streak-counter">🔥 1</div>
+                        <div class="streak-label">Day Streak</div>
+                    </div>
+                </div>
+
+                <div class="section-label" style="margin-bottom: 12px;">1 // How are you right now?</div>
+                <div class="mood-grid">
+                    <div class="mood-badge" id="badge-Happy" onclick="logMood(this, 'Happy')"><img src="happy.PNG" alt="Happy"><span>Happy</span></div>
+                    <div class="mood-badge" id="badge-Cozy" onclick="logMood(this, 'Cozy')"><img src="cozy.PNG" alt="Cozy"><span><span class="activity-align">Cozy</span></span></div>
+                    <div class="mood-badge" id="badge-Tired" onclick="logMood(this, 'Tired')"><img src="tired.PNG" alt="Tired"><span>Tired</span></div>
+                    <div class="mood-badge" id="badge-Awful" onclick="logMood(this, 'Awful')"><img src="awful.PNG" alt="Awful"><span>Awful</span></div>
+                </div>
+
+                <div class="compact-calendar-container">
+                    <div class="section-header-row" style="margin-bottom: 0;">
+                        <div class="section-label" style="font-size: 0.95rem; color: var(--dark-text);" id="cal-month-title">Calendar Timeline</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="calendar-nav-controls" id="calendar-nav-controls">
+                                <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">‹</button>
+                                <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">›</button>
+                            </div>
+                            <button class="wide-view-btn" id="wide-toggle-btn" onclick="toggleCalendarWideView()">Full View 🗓️</button>
+                        </div>
+                    </div>
+                    <div class="calendar-strip-scroller" id="mini-calendar-scroller"></div>
+                </div>
+
+                <div class="section-header-row">
+                    <div class="section-label">2 // Today's Mini Action</div>
+                    <button class="reroll-btn" onclick="rerollRecommendation()">↻</button>
+                </div>
+                <div class="recommend-action-box">
+                    <div class="recommend-text-side" id="activity-card">
+                        <span class="recommend-card-tag" id="rec-tag">Breathing</span>
+                        <h4 id="rec-title">5-Min Heart Rate Coherence</h4>
+                    </div>
+                    <div class="action-circle-go" onclick="alert('Starting your 5-min coherence window!')">➔</div>
+                </div>
+
+                <div class="section-label" style="margin-bottom: 12px;">3 // Express & Release</div>
+                <div class="journal-composer">
+                    <textarea class="journal-input" id="journal-textarea" placeholder="Pour out any heavy thoughts onto the lines..."></textarea>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                        <button class="keep-btn" onclick="saveJournalEntry()">Keep Safely</button>
+                    </div>
+                </div>
+
+                <div class="journal-feed" id="live-journal-feed"></div>
+            </div>
+
+            <div class="bottom-nav-bar">
+                <a class="nav-item active" onclick="navigateTo('screen-home')">
+                    <img src="home.PNG" alt="Home" class="nav-icon-img">
+                    <span>Home</span>
+                </a>
+                <a class="nav-item" onclick="navigateTo('screen-analytics')">
+                    <img src="analytics.PNG" alt="Analytics" class="nav-icon-img">
+                    <span>Analytics</span>
+                </a>
+                <a class="nav-item" onclick="navigateTo('screen-profile')">
+                    <img src="acc.PNG" alt="Account" class="nav-icon-img">
+                    <span>Account</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             ANALYTICS SCREEN
+             ========================================== -->
+        <div id="screen-analytics" class="app-screen">
+            <div style="flex-shrink: 0; width: 100%;">
+                <div class="home-top-bar">
+                    <h2 class="app-title-adelia" style="font-size: 2rem; margin-top: 6px;">Vibe Insights</h2>
+                </div>
+            </div>
+
+            <div class="analytics-scroll-container">
+                <div class="vibe-hero-card">
+                    <span style="color: var(--dark-text);">Current Dominant Vibe</span>
+                    <div class="vibe-badge-title" id="dominant-vibe-display">None ✨</div>
+                </div>
+
+                <div class="section-label" style="margin-bottom: 14px;">Mood Allocation Tracker</div>
+                <div class="stat-bar-container">
+                    <div>
+                        <div class="stat-row">
+                            <span class="stat-label-with-img"><img src="happy.PNG" alt="Happy"> Happy</span>
+                            <span id="pct-Happy">0%</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill" id="fill-Happy"></div></div>
+                    </div>
+                    <div>
+                        <div class="stat-row">
+                            <span class="stat-label-with-img"><img src="cozy.PNG" alt="Cozy"> Cozy</span>
+                            <span id="pct-Cozy">0%</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill" id="fill-Cozy"></div></div>
+                    </div>
+                    <div>
+                        <div class="stat-row">
+                            <span class="stat-label-with-img"><img src="tired.PNG" alt="Tired"> Tired</span>
+                            <span id="pct-Tired">0%</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill" id="fill-Tired"></div></div>
+                    </div>
+                    <div>
+                        <div class="stat-row">
+                            <span class="stat-label-with-img"><img src="awful.PNG" alt="Awful"> Awful</span>
+                            <span id="pct-Awful">0%</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill" id="fill-Awful"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav-bar">
+                <a class="nav-item" onclick="navigateTo('screen-home')">
+                    <img src="home.PNG" alt="Home" class="nav-icon-img">
+                    <span>Home</span>
+                </a>
+                <a class="nav-item active" onclick="navigateTo('screen-analytics')">
+                    <img src="analytics.PNG" alt="Analytics" class="nav-icon-img">
+                    <span>Analytics</span>
+                </a>
+                <a class="nav-item" onclick="navigateTo('screen-profile')">
+                    <img src="acc.PNG" alt="Account" class="nav-icon-img">
+                    <span>Account</span>
+                </a>
+            </div>
+        
+
+        </div>
+
+        <!-- PROFILE SCREEN -->
+        <div id="screen-profile" class="app-screen" style="padding:0;background:linear-gradient(180deg,#ffdce9 0%, #ffffff 55%, #e6f7ff 100%);">
+            <div style="overflow-y:auto;height:100%;padding:28px 34px 120px;">
+
+                <div style="background:rgba(255,255,255,.8);border:3px solid #ffc7da;border-radius:28px;padding:24px;display:flex;align-items:center;gap:18px;margin-top:30px;margin-bottom:18px;">
+                    <div style="width:110px;height:110px;border-radius:50%;background:url('pfp.jpg') center/cover;border:4px solid white;"></div>
+                    <div>
+                        <h2 class="app-title-adelia" style="font-size:2rem;text-align:left;">Tohruchan</h2>
+                        <p style="font-weight:700;color:var(--dark-text);">૮ ˶ᵔ ᵕ ᵔ˶ ა</p>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div style="background:#fffef7;border:3px solid #f6e9c8;border-radius:24px;padding:18px;min-height:240px;">
+                        <h3 style="font-family:'Fredoka One',sans-serif;color:var(--branding-pink);font-size:1.15rem;margin-bottom:14px;">♡ About Me</h3>
+                        <div style="opacity:.45;margin-bottom:18px;margin-left:18px;;font-weight:700;color:var(--dark-text);">Edit your bio here!</div>
+                        <textarea id='about-me-editor' style='width:100%;height:120px;background:transparent;border:none;outline:none;resize:none;color:var(--dark-text);font-family:Nunito,sans-serif;'></textarea>
+                    </div>
+
+                    <div style="background:#fffef7;border:3px solid #f6e9c8;border-radius:24px;padding:18px;min-height:320px;">
+                        <h3 style="font-family:'Fredoka One',sans-serif;color:var(--branding-pink);font-size:1.15rem;">♡ Activity</h3>
+                        <p><span style='display:inline-block;background:#e3faff;padding:6px 10px;border-radius:12px;font-family:Fredoka One,sans-serif;'><span class="activity-align">Check-In Streak</span></span></p>
+                        <p style='margin-top:8px; margin-left:12px;' id='profile-streak-value'>1 Day</p>
+                        <p style='margin-top:12px;'><span style='display:inline-block;background:#ffe3ec;padding:6px 10px;border-radius:12px;font-family:Fredoka One,sans-serif;'><span class="activity-align">Fav Mood</span></span></p>
+                        <p style='margin-top:8px;'><span class="activity-align">Cozy</span></p>
+                        <p style='margin-top:12px;'><span class="activity-align">Check-ins: 1</span></p>
+                    </div>
+
+                    <div style="grid-column:1 / span 2;background:#fffef7;border:3px solid #f6e9c8;border-radius:24px;padding:18px;min-height:120px;">
+                        <h3 style="font-family:'Fredoka One',sans-serif;color:var(--branding-pink);font-size:1.15rem;">♡ Status</h3>
+                        <div id='profile-mood-status' class="status-align" style="font-family:'Fredoka One',sans-serif;font-size:2rem;line-height:1;color:var(--branding-pink);margin-top:20px;text-transform:uppercase;">COZY</div>
+                    </div>
+                </div>
+
+                <div onclick="navigateTo('screen-onboarding', true)" style="margin-top:16px;background:#ffc4da;color:#fff;text-align:center;padding:14px;border-radius:18px;font-family:'Fredoka One',sans-serif;cursor:pointer;">
+                    Log Out
+                </div>
+            </div>
+
+            <div class="bottom-nav-bar">
+                <a class="nav-item" onclick="navigateTo('screen-home')">
+                    <img src="home.PNG" alt="Home" class="nav-icon-img">
+                    <span>Home</span>
+                </a>
+                <a class="nav-item" onclick="navigateTo('screen-analytics')">
+                    <img src="analytics.PNG" alt="Analytics" class="nav-icon-img">
+                    <span>Analytics</span>
+                </a>
+                <a class="nav-item active" onclick="navigateTo('screen-profile')">
+                    <img src="acc.PNG" alt="Account" class="nav-icon-img">
+                    <span>Account</span>
+                </a>
+            </div>
+        </div>
+
+<script>
+        let currentSlide = 1;
+        const totalSlides = 3;
+
+        let streakCount = 1; 
+        let hasLoggedToday = false; 
+
+        // Fresh mood history for the current session/month
+        let moodDatabase = {};
+        const today = new Date();
+        let currentCalendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        let selectedCalendarDayId = getDateKey(today);
+        let calendarWideView = false;
+
+        const wellnessPool = [
+            { tag: "Breathing", title: "5-Min Heart Rate Coherence" },
+            { tag: "Somatic", title: "Gently Release Tension from Neck & Face" },
+            { tag: "Expressive", title: "Doodle Your Mood as Shapes in a Margin" },
+            { tag: "Grounding", title: "Find 3 Pastel Things Around You Right Now" },
+            { tag: "Comfort", title: "Wrap Warmly & Sip Water Slowly" }
+        ];
+
+        /* ==========================================
+           VIDEO CONTROL FLAGS
+           ========================================== */
+        let onboardingVideoStopped = false;
+        let introTransitionDone = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWelcomeGreeting();
+            renderCompactCalendar();
+            refreshAnalyticsVisuals();
+            updateProfileStats();
+            setupSwipeGestures();
+            setupIntroVideoController();
+        });
+
+        /* ==========================================
+           SEAMLESS INTRO -> LOOP VIDEO HANDOFF
+           ========================================== */
+        function setupIntroVideoController() {
+            const introVideo = document.getElementById('introVideo');
+            const loopVideo = document.getElementById('loopVideo');
+
+            if (!introVideo || !loopVideo) return;
+
+            // Start loop video immediately in the background so it's already ready
+            loopVideo.play().catch(() => {});
+
+            introVideo.addEventListener('ended', () => {
+                if (introTransitionDone || onboardingVideoStopped) return;
+                introTransitionDone = true;
+
+                // Instantly hide intro; loop is already playing underneath
+                introVideo.style.display = 'none';
+            });
+        }
+
+        function stopOnboardingVideo() {
+            if (onboardingVideoStopped) return;
+            onboardingVideoStopped = true;
+
+            const videoWrapper = document.getElementById('videoWrapper');
+            const introVideo = document.getElementById('introVideo');
+            const loopVideo = document.getElementById('loopVideo');
+
+            if (introVideo) {
+                introVideo.pause();
+                introVideo.removeAttribute('src');
+                introVideo.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+                introVideo.load();
+            }
+
+            if (loopVideo) {
+                loopVideo.pause();
+                loopVideo.removeAttribute('src');
+                loopVideo.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+                loopVideo.load();
+            }
+
+            if (videoWrapper) {
+                videoWrapper.style.display = 'none';
+            }
+        }
+
+        /* ==========================================
+           ONBOARDING SWIPE / NAV
+           ========================================== */
+
+        let clickAudioCtx = null;
+
+        function playClickSfx() {
+            try {
+                if (!clickAudioCtx) {
+                    clickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                if (clickAudioCtx.state === 'suspended') {
+                    clickAudioCtx.resume();
+                }
+
+                const now = clickAudioCtx.currentTime;
+                const osc = clickAudioCtx.createOscillator();
+                const gain = clickAudioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(520, now + 0.045);
+
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.08, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+                osc.connect(gain);
+                gain.connect(clickAudioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.065);
+            } catch (e) {}
+        }
+
+        function setupSwipeGestures() {
+            const zone = document.getElementById('swipe-zone');
+            let startX = 0;
+            let endX = 0;
+
+            zone.addEventListener('touchstart', e => {
+                startX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            zone.addEventListener('touchend', e => {
+                endX = e.changedTouches[0].screenX;
+                const threshold = 60;
+                if (startX - endX > threshold) {
+                    handleNextSlide();
+                } else if (endX - startX > threshold) {
+                    handlePrevSlide();
+                }
+            }, { passive: true });
+        }
+
+        function handleNextSlide() {
+
+            if (currentSlide === 1) {
+                const bgContainer = document.getElementById('bgImageContainer');
+                const onboardingScreen = document.getElementById('screen-onboarding');
+
+                if (onboardingScreen) {
+                    onboardingScreen.classList.add('bg-ready');
+                }
+
+                if (bgContainer) {
+                    bgContainer.style.display = 'block';
+                    bgContainer.style.opacity = '1';
+                }
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        stopOnboardingVideo();
+
+                        if (currentSlide < totalSlides) {
+                            document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                            document.getElementById(`dot-${currentSlide}`).classList.remove('active');
+
+                            currentSlide++;
+
+                            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                            document.getElementById(`dot-${currentSlide}`).classList.add('active');
+
+                            if (currentSlide === totalSlides) {
+                                document.getElementById('next-slide-btn').innerText = "✓";
+                            }
+                        } else {
+                            navigateTo('screen-login', true);
+                        }
+                    });
+                });
+
+                return;
+            }
+
+            if (currentSlide < totalSlides) {
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                document.getElementById(`dot-${currentSlide}`).classList.remove('active');
+
+                currentSlide++;
+
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                document.getElementById(`dot-${currentSlide}`).classList.add('active');
+
+                if (currentSlide === totalSlides) {
+                    document.getElementById('next-slide-btn').innerText = "✓";
+                }
+            } else {
+                navigateTo('screen-login', true);
+            }
+        }
+
+        function handlePrevSlide() {
+            if (currentSlide > 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                document.getElementById(`dot-${currentSlide}`).classList.remove('active');
+
+                currentSlide--;
+
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                document.getElementById(`dot-${currentSlide}`).classList.add('active');
+
+                document.getElementById('next-slide-btn').innerText = "➔";
+            }
+        }
+
+        function handleAppLogin() {
+            navigateTo('screen-home', true);
+        }
+
+        function handleSocialLogin(provider) {
+            navigateTo('screen-home', true);
+        }
+
+        function navigateTo(screenId, animate = false) {
+            const current = document.querySelector('.app-screen.active');
+            const target = document.getElementById(screenId);
+            if (!target || current === target) return;
+
+            const finishNav = () => {
+                document.querySelectorAll('.app-screen').forEach(scr => {
+                    scr.classList.remove('active', 'screen-transition-in', 'screen-transition-out');
+                });
+                target.classList.add('active');
+
+                document.querySelectorAll('.bottom-nav-bar .nav-item').forEach(item => item.classList.remove('active'));
+
+                if (screenId === 'screen-home') {
+                    document.querySelectorAll('.bottom-nav-bar').forEach(bar => bar.querySelectorAll('.nav-item')[0].classList.add('active'));
+                } else if (screenId === 'screen-analytics') {
+                    document.querySelectorAll('.bottom-nav-bar').forEach(bar => bar.querySelectorAll('.nav-item')[1].classList.add('active'));
+                } else if (screenId === 'screen-profile') {
+                    document.querySelectorAll('.bottom-nav-bar').forEach(bar => {
+                        const items = bar.querySelectorAll('.nav-item');
+                        if(items[2]) items[2].classList.add('active');
+                    });
+                }
+
+                if (animate) {
+                    target.classList.add('screen-transition-in');
+                    setTimeout(() => target.classList.remove('screen-transition-in'), 450);
+                }
+            };
+
+            if (!animate || !current) {
+                finishNav();
+                return;
+            }
+
+            current.classList.add('screen-transition-out');
+            setTimeout(() => {
+                current.classList.remove('screen-transition-out');
+                finishNav();
+            }, 260);
+        }
+
+        /* ==========================================
+           MOOD LOGGING
+           ========================================== */
+        function logMood(element, moodType) {
+            document.querySelectorAll('.mood-grid .mood-badge').forEach(b => {
+                b.classList.remove('selected', 'select-Happy', 'select-Cozy', 'select-Tired', 'select-Awful');
+            });
+
+            element.classList.add('selected', `select-${moodType}`, 'animating');
+            setTimeout(() => element.classList.remove('animating'), 300);
+
+            moodDatabase[selectedCalendarDayId] = moodType;
+            renderCompactCalendar();
+            refreshAnalyticsVisuals();
+            updateProfileStats();
+
+            if (!hasLoggedToday && selectedCalendarDayId === getDateKey(today)) {
+                hasLoggedToday = true;
+                streakCount += 1;
+
+                const streakDisplay = document.getElementById('live-streak-counter');
+                if (streakDisplay) {
+                    streakDisplay.innerText = `🔥 ${streakCount}`;
+                }
+
+                const card = document.getElementById('streak-card');
+                if (card) {
+                    card.style.transform = "scale(1.1)";
+                    setTimeout(() => card.style.transform = "scale(1)", 250);
+                }
+
+                updateProfileStats();
+                const greeting = document.getElementById('welcome-greeting');
+                if (greeting) {
+                    greeting.innerHTML = `You're all set!  <br>Vibe logged beautifully.`;
+                }
+            }
+
+            const feedContainer = document.getElementById('live-journal-feed');
+            if (feedContainer) {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                const timeStr = `${hours}:${minutes} ${ampm}`;
+
+                const quickCard = document.createElement('div');
+                quickCard.className = 'feed-item';
+                quickCard.style.borderLeftColor = `var(--pastel-${moodType.toLowerCase()})`;
+                quickCard.innerHTML = `
+                    <div class="feed-meta">System Sync • ${timeStr}</div>
+                    <div class="feed-text">
+                        Logged feeling <strong style="color:var(--dark-text);">${moodType}</strong> for ${formatSelectedCalendarLabel()}. Keep resting safely!
+                    </div>
+                `;
+                feedContainer.insertBefore(quickCard, feedContainer.firstChild);
+            }
+        }
+
+        /* ==========================================
+           CALENDAR
+           ========================================== */
+        function getDateKey(dateObj) {
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        }
+
+        function isSameDay(a, b) {
+            return a.getFullYear() === b.getFullYear() &&
+                   a.getMonth() === b.getMonth() &&
+                   a.getDate() === b.getDate();
+        }
+
+        function formatSelectedCalendarLabel() {
+            const [year, month, day] = selectedCalendarDayId.split('-').map(Number);
+            const d = new Date(year, month - 1, day);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function getTimeBasedGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'Good morning';
+            if (hour < 18) return 'Good afternoon';
+            return 'Good evening';
+        }
+
+        function updateWelcomeGreeting() {
+            const greeting = document.getElementById('welcome-greeting');
+            if (!greeting) return;
+            greeting.innerHTML = `${getTimeBasedGreeting()}! ✨<br>Let's check in for today.`;
+        }
+
+
+        function updateCalendarHeader() {
+            const title = document.getElementById('cal-month-title');
+            const navControls = document.getElementById('calendar-nav-controls');
+            const btn = document.getElementById('wide-toggle-btn');
+            if (!title || !navControls || !btn) return;
+
+            if (calendarWideView) {
+                title.innerText = currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                navControls.classList.add('active');
+                btn.innerText = 'Compact 📱';
+            } else {
+                title.innerText = `Viewing Timeline // ${formatSelectedCalendarLabel()}`;
+                navControls.classList.remove('active');
+                btn.innerText = 'Full View 🗓️';
+            }
+        }
+
+        function renderCompactCalendar() {
+            const scroller = document.getElementById('mini-calendar-scroller');
+            if (!scroller) return;
+            scroller.innerHTML = '';
+            scroller.classList.toggle('full-wide-grid', calendarWideView);
+
+            const daysArr = [];
+
+            if (calendarWideView) {
+                const year = currentCalendarMonth.getFullYear();
+                const month = currentCalendarMonth.getMonth();
+                const totalDays = new Date(year, month + 1, 0).getDate();
+
+                for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+                    const dateObj = new Date(year, month, dayNum);
+                    daysArr.push({
+                        id: getDateKey(dateObj),
+                        num: String(dayNum),
+                        label: dateObj.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 3),
+                        dateObj
+                    });
+                }
+            } else {
+                const start = new Date(today);
+                start.setDate(today.getDate() - 3);
+
+                for (let i = 0; i < 7; i++) {
+                    const dateObj = new Date(start);
+                    dateObj.setDate(start.getDate() + i);
+                    daysArr.push({
+                        id: getDateKey(dateObj),
+                        num: String(dateObj.getDate()),
+                        label: dateObj.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 3),
+                        dateObj
+                    });
+                }
+            }
+
+            daysArr.forEach(day => {
+                const node = document.createElement('div');
+                node.className = 'cal-day-node';
+
+                if (isSameDay(day.dateObj, today)) {
+                    node.classList.add('active-today');
+                }
+                if (day.id === selectedCalendarDayId) {
+                    node.classList.add('selected-date');
+                    const selectedMood = moodDatabase[day.id];
+                    if (selectedMood) {
+                        node.classList.add(`mood-${selectedMood.toLowerCase()}`);
+                    }
+                }
+
+                node.innerHTML = `
+                    <div class="day-lbl">${day.label}</div>
+                    <div class="num-lbl">${day.num}</div>
+                    <div class="mood-dot-marker"></div>
+                `;
+
+                node.onclick = () => {
+                    selectedCalendarDayId = day.id;
+                    if (!calendarWideView) {
+                        updateCalendarHeader();
+                    }
+                    document.querySelectorAll('.mood-grid .mood-badge').forEach(b => {
+                        b.classList.remove('selected', 'select-Happy', 'select-Cozy', 'select-Tired', 'select-Awful');
+                    });
+
+                    const savedMood = moodDatabase[day.id];
+                    if (savedMood) {
+                        const activeBadge = document.getElementById(`badge-${savedMood}`);
+                        if (activeBadge) activeBadge.classList.add('selected', `select-${savedMood}`);
+                    }
+
+                    renderCompactCalendar();
+                };
+
+                scroller.appendChild(node);
+
+                const existingMood = moodDatabase[day.id];
+                if (existingMood) {
+                    const marker = node.querySelector('.mood-dot-marker');
+                    if (marker) {
+                        marker.innerHTML = `<img src="${existingMood.toLowerCase()}.PNG" alt="${existingMood}">`;
+                    }
+                }
+            });
+
+            updateCalendarHeader();
+        }
+
+        function toggleCalendarWideView() {
+            calendarWideView = !calendarWideView;
+            if (calendarWideView) {
+                const [year, month] = selectedCalendarDayId.split('-').map(Number);
+                currentCalendarMonth = new Date(year, month - 1, 1);
+            }
+            renderCompactCalendar();
+        }
+
+        function changeCalendarMonth(direction) {
+            currentCalendarMonth = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + direction, 1);
+            renderCompactCalendar();
+        }
+
+        /* ==========================================
+           RECOMMENDATION CARD
+           ========================================== */
+        function rerollRecommendation() {
+            const rolled = wellnessPool[Math.floor(Math.random() * wellnessPool.length)];
+            const tagEl = document.getElementById('rec-tag');
+            const titleEl = document.getElementById('rec-title');
+
+            if (tagEl && titleEl) {
+                tagEl.innerText = rolled.tag;
+                titleEl.innerText = rolled.title;
+            }
+
+            const card = document.getElementById('activity-card');
+            if (card) {
+                card.style.opacity = 0.4;
+                setTimeout(() => card.style.opacity = 1, 150);
+            }
+        }
+
+        /* ==========================================
+           ANALYTICS
+           ========================================== */
+        function refreshAnalyticsVisuals() {
+            let counts = { Happy: 0, Cozy: 0, Tired: 0, Awful: 0 };
+            let total = 0;
+
+            for (let day in moodDatabase) {
+                let m = moodDatabase[day];
+                if (m && counts.hasOwnProperty(m)) {
+                    counts[m]++;
+                    total++;
+                }
+            }
+
+            let maxCount = 0;
+            let dominantVibe = "None ✨";
+
+            for (let type in counts) {
+                let pct = total > 0 ? Math.round((counts[type] / total) * 100) : 0;
+                const textEl = document.getElementById(`pct-${type}`);
+                const fillEl = document.getElementById(`fill-${type}`);
+                
+                if (textEl) textEl.innerText = `${pct}%`;
+                if (fillEl) fillEl.style.width = `${pct}%`;
+
+                if (counts[type] > maxCount) {
+                    maxCount = counts[type];
+                    dominantVibe = type;
+                }
+            }
+
+            const dominantDisplay = document.getElementById('dominant-vibe-display');
+            if (dominantDisplay) {
+                if (dominantVibe !== "None ✨") {
+                    dominantDisplay.innerHTML = `<img src="${dominantVibe.toLowerCase()}.PNG" alt="${dominantVibe}"> ${dominantVibe}`;
+                } else {
+                    dominantDisplay.innerText = "None ✨";
+                }
+            }
+        }
+
+        /* ==========================================
+           JOURNAL
+           ========================================== */
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function saveJournalEntry() {
+            const txtArea = document.getElementById('journal-textarea');
+            const entryText = txtArea.value.trim();
+            if (!entryText) return;
+
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const currentTimestamp = `${hours}:${minutes} ${ampm}`;
+
+            const feedContainer = document.getElementById('live-journal-feed');
+            if (feedContainer) {
+                const newCard = document.createElement('div');
+                newCard.className = 'feed-item';
+                newCard.innerHTML = `
+                    <div class="feed-meta" style="color: var(--branding-pink);">Saved Entry (${formatSelectedCalendarLabel()}) • ${currentTimestamp}</div>
+                    <div class="feed-text">${escapeHtml(entryText)}</div>
+                `;
+                feedContainer.insertBefore(newCard, feedContainer.firstChild);
+            }
+
+            txtArea.value = "";
+            txtArea.blur(); 
+        }
+
+
+        const updateProfileStats = () => {
+            const profileStreak = document.getElementById('profile-streak-value');
+            if(profileStreak){
+                profileStreak.textContent = streakCount <= 2 ? `${streakCount} Day${streakCount>1?'s':''}` : `${streakCount} Days`;
+            }
+        };
+
+
+        /* ==========================================
+           CLICK SFX BINDING
+           ========================================== */
+        document.addEventListener('click', function(e) {
+            const clickable = e.target.closest('button, .nav-item, .mood-badge, .cal-day-node, .action-circle-go, .reroll-btn, .wide-view-btn, a, [onclick]');
+            if (clickable) {
+                playClickSfx();
+            }
+        }, true);
+
+    </script>
+</body>
+</html>
+<!-- v8 pill adjustment -->
+<style>.pill-nudge{transform:translateX(12px);display:inline-block;}</style>
+
+<style>
+/* v9: move activity pills + 1 Day slightly right */
+.activity-pill-container{transform:translateX(12px);}
+.day-row{margin-left:12px;}
+</style>
